@@ -161,6 +161,10 @@ La première fois, elle règle tout avec toi, avec des boutons, sans terminal :
   bien plus gros que ce qui tient sur un PC, mais tes messages passent par les serveurs d'Ollama. Pas connecté, son
   menu › **Modèle IA** a **Me connecter à Ollama (modèles cloud gratuits)…**. Si un modèle cloud ne répond plus
   (déconnecté, plus d'usage gratuit), elle repasse sur un modèle de ton PC.
+  Ou **llama.cpp** (elle te demande lequel) : plus léger, juste le moteur. Elle l'installe (winget), télécharge un
+  modèle sur Hugging Face avec de quoi lire les images (gemma4 E4B 5,2 Go, gemma3 3,3 Go ou gemma4 E2B 3,4 Go ; une
+  connexion coupée reprend où elle en était), et lance `llama-server` dessus elle-même, sur le port 8080. Il s'arrête
+  quand elle quitte. Tu en as plusieurs ? Son menu › Modèle IA passe son serveur sur un autre.
 - **En ligne, sans compte** : Pollinations, rien à régler.
 - **J'ai une clé** : Groq ou Gemini (tous les deux ont une offre gratuite), OpenRouter, OpenAI, Mistral ou DeepSeek.
   Tu colles ta clé dans son panneau et elle la vérifie. Elle reste sur ton PC, chiffrée avec ton compte Windows, et ne
@@ -504,6 +508,7 @@ tools/build-intro.py     détoure les gros plans de son intro, tous de la même 
 src/main/                Electron : fenêtre transparente plein écran, clic à travers, tray, bridge HTTP local
   windows.js / .ps1      où sont les autres fenêtres (Windows), pour qu'elle s'assoie dessus
   ollama.js              son chat : le modèle local via Ollama, ou un de ses modèles cloud
+  llamacpp.js            son chat sur llama.cpp : l'installe, télécharge un modèle, lance et arrête son serveur
   apps.js                fermer une appli que tu lui demandes de fermer (après ton clic)
 src/renderer/js/
   sprite.js              shader WebGL : tête, crinière, position assise, smears, images rémanentes, couleurs, glitch

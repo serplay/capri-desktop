@@ -14,7 +14,8 @@ const ollama = require('./ollama');
 const PROVIDERS = {
   ollama: { label: 'Ollama (local)', kind: 'ollama', local: true },
   lmstudio: { label: 'LM Studio (local)', url: 'http://127.0.0.1:1234/v1', local: true },
-  llamacpp: { label: 'llama.cpp / vLLM (local :8080)', url: 'http://127.0.0.1:8080/v1', local: true },
+  // thinkOff: a model that thinks first (gemma4, qwen3…) is asked not to, through its chat template
+  llamacpp: { label: 'llama.cpp / vLLM (local :8080)', url: 'http://127.0.0.1:8080/v1', local: true, thinkOff: true },
   pollinations: {
     label: 'Pollinations (no key)', url: 'https://text.pollinations.ai/openai', modelsUrl: 'https://text.pollinations.ai/models',
   },
@@ -92,7 +93,8 @@ async function openaiChat(p, { model, messages }, onDelta, signal) {
   const res = await fetch(`${p.url}/chat/completions`, {
     method: 'POST',
     headers: headers(p.key),
-    body: JSON.stringify({ model, messages, stream: true }),
+    // llama-server and vLLM hand chat_template_kwargs to the model's template (ignored where it has no such switch)
+    body: JSON.stringify({ model, messages, stream: true, ...(p.thinkOff && { chat_template_kwargs: { enable_thinking: false } }) }),
     signal,
   });
   if (!res.ok) throw await failure(res);

@@ -16,6 +16,7 @@ const WIN = process.platform === 'win32';
 
 // The models she offers for her chat, with what they weigh (as Ollama lists them)
 const MODELS = [
+  { name: 'gemma4:e4b', bytes: 9.6e9 }, // the best of them, sees pictures too
   { name: 'gemma3:4b', bytes: 3.3e9 }, // better in languages other than English
   { name: 'llama3.2', bytes: 2.0e9 },  // lighter
 ];

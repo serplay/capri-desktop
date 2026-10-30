@@ -171,7 +171,7 @@ export const LINES = {
     setup: {
       who: 'Pour te parler, il me faut une IA.',
       why: { noOllama: 'Ollama n’est pas installé sur ce PC.', asleep: 'Ollama est installé, mais il dort.', noModel: 'Ollama n’a pas encore de modèle.' },
-      whoHow: 'Le plus simple : sur ton PC, avec Ollama. C’est gratuit, et rien ne sort de chez toi.\nSinon : en ligne sans compte, ou avec la clé d’un service.',
+      whoHow: 'Le plus simple : sur ton PC, avec Ollama ou llama.cpp. C’est gratuit, et rien ne sort de chez toi.\nSinon : en ligne sans compte, ou avec la clé d’un service.',
       local: 'Sur mon PC', online: 'En ligne, sans compte', key: 'J’ai une clé', later: 'Plus tard', back: 'Retour', other: 'Une autre IA', ok: 'Compris', talk: 'Parler',
       install: 'J’installe Ollama ?',
       installHow: 'C’est lui qui fait tourner l’IA sur ton PC. Environ 1 Go, une ou deux minutes. Windows peut te demander de confirmer.',
@@ -184,7 +184,7 @@ export const LINES = {
       wakeFailed: 'Ollama ne se réveille pas.', wakeFailedHow: 'Ouvre-le depuis le menu Démarrer, puis reparle-moi.',
       model: 'Il me faut un modèle. C’est mon cerveau, en gros.',
       bigger: 'Un plus gros, alors. Lequel ?',
-      modelHow: 'gemma3 parle mieux les autres langues que l’anglais. llama3.2 est plus léger, pour les petits PC.',
+      modelHow: 'gemma4 est la plus futée et lit les images, pour les PC costauds. gemma3 parle mieux les autres langues que l’anglais. llama3.2 est plus léger, pour les petits PC.',
       cloudFree: 'gratuit, en ligne',
       cloudHow: 'Ceux marqués « en ligne » tournent chez Ollama, avec ton compte : rien à télécharger, mais tes messages passent par leurs serveurs.',
       pulling: 'Je télécharge {model}…', pullStart: 'Ça démarre…',
@@ -211,6 +211,20 @@ export const LINES = {
       freeBtn: 'Ouvrir la fenêtre',
       freeOpened: 'Fenêtre ouverte.',
       freeOpenedHow: 'Choisis un modèle dedans. Dès que {name} fait quelque chose, je te le dis.',
+      // llama.cpp, l'autre façon de la faire tourner sur ton PC (setup.js, llamacpp.js)
+      llama: {
+        engine: 'Ollama ou llama.cpp ?',
+        engineHow: 'Les deux font tourner l’IA sur ton PC, gratuitement. Ollama est une appli qui s’occupe de tout ; llama.cpp, juste le moteur : plus léger, souvent plus rapide.',
+        why: { missing: 'llama.cpp n’est pas installé sur ce PC.', noModel: 'llama.cpp n’a pas encore de modèle.' },
+        install: 'J’installe llama.cpp ?',
+        installHow: 'C’est le moteur qui fait tourner l’IA sur ton PC. Environ 100 Mo, une minute. Windows te demandera peut-être de confirmer.',
+        site: 'La page de llama.cpp',
+        noWingetHow: 'Télécharge llama.cpp sur sa page (ou avec brew install llama.cpp), puis reparle-moi : je ferai le reste.',
+        installing: 'J’installe llama.cpp…',
+        starting: 'Je lance llama.cpp…', startingHow: 'Il charge le modèle : quelques secondes, parfois une minute.',
+        startFailed: 'llama.cpp ne démarre pas.',
+        modelHow: 'gemma4 e4b est le plus futé, pour les PC costauds. gemma3 est meilleur dans d’autres langues que l’anglais. gemma4 e2b est plus léger, pour les petits PC. Tous lisent les images.',
+      },
     },
     // la personnaliser (custom.js), et « appelle-moi Max », « souviens-toi que… » dans son chat
     custom: {
@@ -521,7 +535,7 @@ export const LINES = {
     setup: {
       who: 'To talk with you, I need an AI.',
       why: { noOllama: 'Ollama isn’t installed on this PC.', asleep: 'Ollama is installed, but it’s asleep.', noModel: 'Ollama has no model yet.' },
-      whoHow: 'Easiest: on your PC, with Ollama. It’s free, and nothing leaves your machine.\nOr online with no account, or with a key from a service.',
+      whoHow: 'Easiest: on your PC, with Ollama or llama.cpp. It’s free, and nothing leaves your machine.\nOr online with no account, or with a key from a service.',
       local: 'On my PC', online: 'Online, no account', key: 'I have a key', later: 'Later', back: 'Back', other: 'Another AI', ok: 'Got it', talk: 'Talk',
       install: 'Should I install Ollama?',
       installHow: 'It’s what runs the AI on your PC. About 1 GB, a minute or two. Windows may ask you to confirm.',
@@ -534,7 +548,7 @@ export const LINES = {
       wakeFailed: 'Ollama won’t wake up.', wakeFailedHow: 'Open it from the Start menu, then talk to me again.',
       model: 'I need a model. My brain, more or less.',
       bigger: 'A bigger one, then. Which one?',
-      modelHow: 'gemma3 is better in languages other than English. llama3.2 is lighter, for small PCs.',
+      modelHow: 'gemma4 is the sharpest and reads pictures, for beefy PCs. gemma3 is better in languages other than English. llama3.2 is lighter, for small PCs.',
       cloudFree: 'free, online',
       cloudHow: 'The “online” ones run at Ollama’s, with your account: nothing to download, but your messages go through their servers.',
       pulling: 'Downloading {model}…', pullStart: 'Starting…',
@@ -561,6 +575,20 @@ export const LINES = {
       freeBtn: 'Open the window',
       freeOpened: 'Window open.',
       freeOpenedHow: 'Pick a model in it. As soon as {name} does something, I’ll tell you.',
+      // llama.cpp, the other way to run her on your PC (setup.js, llamacpp.js)
+      llama: {
+        engine: 'Ollama or llama.cpp?',
+        engineHow: 'Both run the AI on your PC, for free. Ollama is an app that handles everything; llama.cpp is just the engine: lighter, often faster.',
+        why: { missing: 'llama.cpp isn’t installed on this PC.', noModel: 'llama.cpp has no model yet.' },
+        install: 'Should I install llama.cpp?',
+        installHow: 'It’s the engine that runs the AI on your PC. About 100 MB, a minute. Windows may ask you to confirm.',
+        site: 'llama.cpp’s page',
+        noWingetHow: 'Download llama.cpp from its page (or brew install llama.cpp), then talk to me again: I’ll do the rest.',
+        installing: 'Installing llama.cpp…',
+        starting: 'Starting llama.cpp…', startingHow: 'It’s loading the model: a few seconds, sometimes a minute.',
+        startFailed: 'llama.cpp won’t start.',
+        modelHow: 'gemma4 e4b is the sharpest, for beefy PCs. gemma3 is better in languages other than English. gemma4 e2b is lighter, for small PCs. They all read pictures.',
+      },
     },
     // making her yours (custom.js), and "call me Max", "remember that…" in her chat
     custom: {
@@ -867,7 +895,7 @@ export const LINES = {
     setup: {
       who: 'Para hablar contigo, necesito una IA.',
       why: { noOllama: 'Ollama no está instalado en este PC.', asleep: 'Ollama está instalado, pero dormido.', noModel: 'Ollama aún no tiene ningún modelo.' },
-      whoHow: 'Lo más fácil: en tu PC, con Ollama. Es gratis y nada sale de tu equipo.\nSi no: en línea sin cuenta, o con la clave de un servicio.',
+      whoHow: 'Lo más fácil: en tu PC, con Ollama o llama.cpp. Es gratis y nada sale de tu equipo.\nSi no: en línea sin cuenta, o con la clave de un servicio.',
       local: 'En mi PC', online: 'En línea, sin cuenta', key: 'Tengo una clave', later: 'Más tarde', back: 'Volver', other: 'Otra IA', ok: 'Entendido', talk: 'Hablar',
       install: '¿Instalo Ollama?',
       installHow: 'Es lo que hace funcionar la IA en tu PC. Cerca de 1 GB, uno o dos minutos. Windows puede pedirte que confirmes.',
@@ -880,7 +908,7 @@ export const LINES = {
       wakeFailed: 'Ollama no se despierta.', wakeFailedHow: 'Ábrelo desde el menú Inicio y vuelve a hablarme.',
       model: 'Necesito un modelo. Mi cerebro, más o menos.',
       bigger: 'Uno más grande, entonces. ¿Cuál?',
-      modelHow: 'gemma3 va mejor en idiomas distintos del inglés. llama3.2 es más ligero, para PCs pequeños.',
+      modelHow: 'gemma4 es la más lista y lee imágenes, para PCs potentes. gemma3 va mejor en idiomas distintos del inglés. llama3.2 es más ligero, para PCs pequeños.',
       cloudFree: 'gratis, en línea',
       cloudHow: 'Los que dicen «en línea» funcionan en Ollama, con tu cuenta: nada que descargar, pero tus mensajes pasan por sus servidores.',
       pulling: 'Descargando {model}…', pullStart: 'Empezando…',
@@ -907,6 +935,20 @@ export const LINES = {
       freeBtn: 'Abrir la ventana',
       freeOpened: 'Ventana abierta.',
       freeOpenedHow: 'Elige un modelo en ella. En cuanto {name} haga algo, te aviso.',
+      // llama.cpp, la otra forma de hacerla funcionar en tu PC (setup.js, llamacpp.js)
+      llama: {
+        engine: '¿Ollama o llama.cpp?',
+        engineHow: 'Los dos hacen funcionar la IA en tu PC, gratis. Ollama es una app que se encarga de todo; llama.cpp, solo el motor: más ligero, a menudo más rápido.',
+        why: { missing: 'llama.cpp no está instalado en este PC.', noModel: 'llama.cpp aún no tiene ningún modelo.' },
+        install: '¿Instalo llama.cpp?',
+        installHow: 'Es el motor que hace funcionar la IA en tu PC. Unos 100 MB, un minuto. Puede que Windows te pida confirmar.',
+        site: 'Página de llama.cpp',
+        noWingetHow: 'Descarga llama.cpp desde su página (o con brew install llama.cpp), luego vuelve a hablarme: yo hago el resto.',
+        installing: 'Instalando llama.cpp…',
+        starting: 'Iniciando llama.cpp…', startingHow: 'Está cargando el modelo: unos segundos, a veces un minuto.',
+        startFailed: 'llama.cpp no arranca.',
+        modelHow: 'gemma4 e4b es el más listo, para PCs potentes. gemma3 va mejor en idiomas distintos del inglés. gemma4 e2b es más ligero, para PCs pequeños. Todos leen imágenes.',
+      },
     },
     // personalizarla (custom.js), y «llámame Max», «recuerda que…» en su chat
     custom: {
@@ -1215,7 +1257,7 @@ export const LINES = {
     setup: {
       who: 'Pra falar com você, eu preciso de uma IA.',
       why: { noOllama: 'O Ollama não está instalado neste PC.', asleep: 'O Ollama está instalado, mas dormindo.', noModel: 'O Ollama ainda não tem nenhum modelo.' },
-      whoHow: 'O mais fácil: no seu PC, com o Ollama. É grátis e nada sai da sua máquina.\nSe não: online sem conta, ou com a chave de um serviço.',
+      whoHow: 'O mais fácil: no seu PC, com o Ollama ou o llama.cpp. É grátis e nada sai da sua máquina.\nSe não: online sem conta, ou com a chave de um serviço.',
       local: 'No meu PC', online: 'Online, sem conta', key: 'Tenho uma chave', later: 'Depois', back: 'Voltar', other: 'Outra IA', ok: 'Entendi', talk: 'Conversar',
       install: 'Instalo o Ollama?',
       installHow: 'É ele que roda a IA no seu PC. Cerca de 1 GB, um ou dois minutos. O Windows pode pedir pra você confirmar.',
@@ -1228,7 +1270,7 @@ export const LINES = {
       wakeFailed: 'O Ollama não acorda.', wakeFailedHow: 'Abra ele pelo menu Iniciar e fale comigo de novo.',
       model: 'Eu preciso de um modelo. Meu cérebro, mais ou menos.',
       bigger: 'Um maior, então. Qual?',
-      modelHow: 'O gemma3 vai melhor em idiomas que não são o inglês. O llama3.2 é mais leve, pra PCs mais fracos.',
+      modelHow: 'O gemma4 é o mais esperto e lê imagens, pra PCs parrudos. O gemma3 vai melhor em idiomas que não são o inglês. O llama3.2 é mais leve, pra PCs mais fracos.',
       cloudFree: 'grátis, online',
       cloudHow: 'Os marcados “online” rodam no Ollama, com a sua conta: nada pra baixar, mas suas mensagens passam pelos servidores deles.',
       pulling: 'Baixando {model}…', pullStart: 'Começando…',
@@ -1255,6 +1297,20 @@ export const LINES = {
       freeBtn: 'Abrir a janela',
       freeOpened: 'Janela aberta.',
       freeOpenedHow: 'Escolha um modelo nela. Assim que o {name} fizer algo, eu te aviso.',
+      // llama.cpp, o outro jeito de rodar ela no seu PC (setup.js, llamacpp.js)
+      llama: {
+        engine: 'Ollama ou llama.cpp?',
+        engineHow: 'Os dois rodam a IA no seu PC, de graça. O Ollama é um app que cuida de tudo; o llama.cpp é só o motor: mais leve, muitas vezes mais rápido.',
+        why: { missing: 'O llama.cpp não está instalado neste PC.', noModel: 'O llama.cpp ainda não tem nenhum modelo.' },
+        install: 'Instalo o llama.cpp?',
+        installHow: 'É o motor que roda a IA no seu PC. Cerca de 100 MB, um minuto. O Windows pode pedir pra você confirmar.',
+        site: 'Página do llama.cpp',
+        noWingetHow: 'Baixe o llama.cpp na página dele (ou com brew install llama.cpp), depois fale comigo de novo: eu faço o resto.',
+        installing: 'Instalando o llama.cpp…',
+        starting: 'Iniciando o llama.cpp…', startingHow: 'Ele está carregando o modelo: alguns segundos, às vezes um minuto.',
+        startFailed: 'O llama.cpp não inicia.',
+        modelHow: 'gemma4 e4b é o mais esperto, pra PCs fortes. gemma3 é melhor em idiomas além do inglês. gemma4 e2b é mais leve, pra PCs fracos. Todos leem imagens.',
+      },
     },
     // personalizar ela (custom.js), e “me chama de Max”, “lembra que…” no chat dela
     custom: {
@@ -1565,7 +1621,7 @@ export const LINES = {
     setup: {
       who: 'Чтобы говорить с тобой, мне нужен ИИ.',
       why: { noOllama: 'Ollama не установлена на этом ПК.', asleep: 'Ollama установлена, но спит.', noModel: 'В Ollama пока нет ни одной модели.' },
-      whoHow: 'Проще всего: у тебя на ПК, через Ollama. Бесплатно, и ничего не уходит наружу.\nИли онлайн без аккаунта, или с ключом какого-нибудь сервиса.',
+      whoHow: 'Проще всего: у тебя на ПК, через Ollama или llama.cpp. Бесплатно, и ничего не уходит наружу.\nИли онлайн без аккаунта, или с ключом какого-нибудь сервиса.',
       local: 'На моём ПК', online: 'Онлайн, без аккаунта', key: 'У меня есть ключ', later: 'Позже', back: 'Назад', other: 'Другой ИИ', ok: 'Понятно', talk: 'Поговорить',
       install: 'Установить Ollama?',
       installHow: 'Это она запускает ИИ у тебя на ПК. Около 1 ГБ, минута-две. Windows может попросить подтвердить.',
@@ -1578,7 +1634,7 @@ export const LINES = {
       wakeFailed: 'Ollama не просыпается.', wakeFailedHow: 'Открой её из меню «Пуск» и снова заговори со мной.',
       model: 'Мне нужна модель. Мой мозг, грубо говоря.',
       bigger: 'Тогда побольше. Какую?',
-      modelHow: 'gemma3 лучше говорит не по-английски. llama3.2 легче, для слабых ПК.',
+      modelHow: 'gemma4 самая умная и читает картинки, для мощных ПК. gemma3 лучше говорит не по-английски. llama3.2 легче, для слабых ПК.',
       cloudFree: 'бесплатно, онлайн',
       cloudHow: 'Те, что «онлайн», работают у Ollama, с твоим аккаунтом: ничего не нужно скачивать, но твои сообщения идут через их серверы.',
       pulling: 'Скачиваю {model}…', pullStart: 'Начинаю…',
@@ -1605,6 +1661,20 @@ export const LINES = {
       freeBtn: 'Открыть окно',
       freeOpened: 'Окно открыто.',
       freeOpenedHow: 'Выбери в нём модель. Как только {name} что-то сделает, я скажу.',
+      // llama.cpp, другой способ запустить её на твоём ПК (setup.js, llamacpp.js)
+      llama: {
+        engine: 'Ollama или llama.cpp?',
+        engineHow: 'Оба запускают ИИ у тебя на ПК, бесплатно. Ollama — приложение, которое всё делает само; llama.cpp — только движок: легче и часто быстрее.',
+        why: { missing: 'llama.cpp не установлен на этом ПК.', noModel: 'У llama.cpp пока нет модели.' },
+        install: 'Установить llama.cpp?',
+        installHow: 'Это движок, который запускает ИИ у тебя на ПК. Около 100 МБ, минута. Windows может попросить подтвердить.',
+        site: 'Страница llama.cpp',
+        noWingetHow: 'Скачай llama.cpp с его страницы (или brew install llama.cpp), потом снова заговори со мной: остальное сделаю я.',
+        installing: 'Устанавливаю llama.cpp…',
+        starting: 'Запускаю llama.cpp…', startingHow: 'Он загружает модель: несколько секунд, иногда минуту.',
+        startFailed: 'llama.cpp не запускается.',
+        modelHow: 'gemma4 e4b — самая умная, для мощных ПК. gemma3 лучше в языках, кроме английского. gemma4 e2b легче, для слабых ПК. Все понимают картинки.',
+      },
     },
     // настроить её (custom.js), и «зови меня Макс», «запомни, что…» в её чате
     custom: {

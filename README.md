@@ -146,13 +146,19 @@ in her own language. Enter sends, Esc closes.
 The first time, she sets it up with you, with buttons, no terminal:
 
 - **On my PC** (free, nothing leaves your machine): she installs [Ollama](https://ollama.com) for you (with winget,
-  Windows' own installer), wakes it up, and downloads a model while a bar fills up: gemma3 (3.3 GB, better in languages
-  other than English) or llama3.2 (2 GB, for smaller PCs). On a tiny model (1B and under) she warns you it may talk
+  Windows' own installer), wakes it up, and downloads a model while a bar fills up: gemma4 (`gemma4:e4b`, 9.6 GB, the sharpest, reads
+  pictures, for PCs with 12 GB of memory or more), gemma3 (3.3 GB, better in languages other than English) or llama3.2
+  (2 GB, for smaller PCs). Any other gemma4 size you pull yourself (`ollama pull gemma4:26b`) shows up in her menu ›
+  AI model. On a tiny model (1B and under) she warns you it may talk
   nonsense and offers a better one.
   Signed in to Ollama? She also offers its free cloud models (`beam:cloud` today): nothing to download, much bigger
   than what fits on a PC, but your messages go through Ollama's servers. Not signed in, her menu › **AI model** has
   **Sign in to Ollama (free cloud models)…**. If a cloud model stops answering (signed out, out of free use), she
   goes back to a model on your PC.
+  Or **llama.cpp** (she asks which): lighter, just the engine. She installs it (winget), downloads a model from
+  Hugging Face with what it needs to read pictures (gemma4 E4B 5.2 GB, gemma3 3.3 GB or gemma4 E2B 3.4 GB; a dropped
+  connection picks up where it was), and starts `llama-server` on it herself, on port 8080. It stops when she quits.
+  Fetched more than one? Her menu › AI model switches her server to it.
 - **Online, no account**: Pollinations, nothing to set up.
 - **I have a key**: Groq or Gemini (both have a free tier), OpenRouter, OpenAI, Mistral or DeepSeek. You paste your
   key in her panel and she checks it. It's kept on your PC, encrypted with your Windows account, and only ever sent to
@@ -163,6 +169,16 @@ Her menu › **AI model** lets you switch later: **Set it up with her…**, or s
 itself: your messages go to `claude -p` in the folder you pick, continuing one conversation, and her hooks show what it
 does. In that last one, permission mode `default` only lets it read (nobody is there to say yes); `acceptEdits` lets it
 edit files without asking. **Forget our conversations** clears what she remembers of your chats.
+
+**Without Ollama**, straight on llama.cpp: start its server, then her menu › AI model › **llama.cpp / vLLM**. Gemma 4,
+for instance (`-hf` fetches it, and what it needs to read pictures, the first time):
+
+```bash
+llama-server -hf unsloth/gemma-4-E4B-it-GGUF:Q8_0 --jinja --port 8080 --temp 1.0 --top-p 0.95 --top-k 64
+```
+
+She asks it not to think before answering (`enable_thinking: false`, through the model's chat template), so her answers
+come right away.
 
 **It's AI.** Her replies are written by the model, not by the show's writers: it's a fan version of her, and the chat
 panel says so every time.
@@ -479,6 +495,7 @@ tools/build-intro.py     cuts her intro's close-ups out of their background, all
 src/main/                Electron: full-screen transparent click-through window, tray, local HTTP bridge
   windows.js / .ps1      where the other windows are (Windows only), so she can sit on them
   ollama.js              her chat: the local model through Ollama, or one of its cloud models
+  llamacpp.js            her chat on llama.cpp: installs it, fetches a model, starts and stops its server
   apps.js                closing an app you asked her to close (after your click)
 src/renderer/js/
   sprite.js              WebGL shader: head tilt, mane flare, sitting, smears, afterimages, colors, glitch

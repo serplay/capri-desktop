@@ -1,5 +1,6 @@
 // Setting up who she talks with, with buttons, so nobody has to open a terminal: on this PC
-// (Ollama installed, woken up and a model fetched for you, with how far along it is), online with
+// (Ollama or llama.cpp, your pick: installed, woken up and a model fetched for you, with how far
+// along it is), online with
 // no account (Pollinations), or with a key you paste in her panel. And Claude Code or Codex for
 // free, run through Ollama. Each step is a panel of her guide (guide.js).
 
@@ -76,7 +77,10 @@ export class Setup {
     if (status && !status.ok) {
       if (status.code === 'nokey') return this.paste(status.provider);
       if (status.code === 'nourl') return this.address();
-      if (!status.provider || status.provider === 'ollama') {
+      if (status.provider === 'llamacpp') {
+        const state = await this.host.llamaState();
+        why = !state.installed ? t.llama.why.missing : t.llama.why.noModel;
+      } else if (!status.provider || status.provider === 'ollama') {
         const state = await this.host.ollamaState();
         why = !state.installed ? t.why.noOllama : !state.running ? t.why.asleep : t.why.noModel;
       } else {
@@ -95,10 +99,69 @@ export class Setup {
         { id: 'later', label: t.later },
       ],
     });
-    if (id === 'local') return this.ollama();
+    if (id === 'local') return this.engine();
     if (id === 'online') return this.use('pollinations');
     if (id === 'key') return this.pickKeyed();
     return false;
+  }
+
+  // On this PC: Ollama, or llama.cpp (lighter: just the engine and a model file).
+  async engine() {
+    const t = this.t;
+    const id = await this.guide.ask({
+      face: 'look', line: t.llama.engine, quote: t.llama.engineHow,
+      actions: [
+        { id: 'ollama', label: 'Ollama', primary: true },
+        { id: 'llama', label: 'llama.cpp' },
+        { id: 'back', label: t.back },
+      ],
+    });
+    if (id === 'ollama') return this.ollama();
+    if (id === 'llama') return this.llama();
+    if (id === 'back') return this.choose(null);
+    return false;
+  }
+
+  // llama.cpp as far as it needs to go: installed, a model fetched, its server started on it.
+  async llama() {
+    const t = this.t.llama;
+    if (!(await this.llamaUp())) return false;
+    const state = await this.host.llamaState();
+    let name = null; // a server already running, or a model already here: she starts on that
+    if (!state.running && !state.models.length) {
+      name = await this.pickModel(this.t.model, true);
+      if (!name) return false;
+      const res = await this.pull(name, true);
+      if (!res.ok) return res.error === 'stopped' ? false : this.fail(this.t.pullFailed, res.error);
+    }
+    this.working(t.starting, t.startingHow);
+    const res = await this.host.startLlama(name);
+    return res.ok ? this.done() : this.fail(t.startFailed, res.error);
+  }
+
+  // llama.cpp installed (with winget, on your click). True once it is.
+  async llamaUp() {
+    const t = this.t;
+    const state = await this.host.llamaState();
+    if (state.installed) return true;
+    if (!state.winget) {
+      const id = await this.guide.ask({
+        face: 'aside', line: t.noWinget, quote: t.llama.noWingetHow,
+        actions: [{ id: 'site', label: t.llama.site, primary: true }, { id: 'later', label: t.later }],
+      });
+      if (id === 'site') this.host.openLlama();
+      return false;
+    }
+    const id = await this.guide.ask({
+      face: 'look', line: t.llama.install, quote: t.llama.installHow,
+      actions: [{ id: 'install', label: t.installBtn, primary: true }, { id: 'site', label: t.llama.site }, { id: 'later', label: t.later }],
+    });
+    if (id === 'site') this.host.openLlama();
+    if (id !== 'install') return false;
+    this.working(t.llama.installing, t.installingHow);
+    const res = await this.host.installLlama();
+    if ((await this.host.llamaState()).installed) return true;
+    return this.fail(t.installFailed, res.error || '');
   }
 
   // Ollama as far as it needs to go: installed, awake, with a model.
@@ -148,16 +211,18 @@ export class Setup {
   }
 
   // Which model to fetch: the better one first when the PC has room for it, then Ollama's free cloud
-  // ones if you're signed in to it.
-  async pickModel(line = this.t.model) {
+  // ones if you're signed in to it. `llama`: one of llama.cpp's (no cloud ones there).
+  async pickModel(line = this.t.model, llama = false) {
     const t = this.t;
     const info = await this.host.setupInfo();
-    const models = info.ram >= ROOMY ? info.models : [...info.models].reverse();
-    const cloud = info.cloud || [];
+    const offered = llama ? info.llamaModels : info.models;
+    const models = info.ram >= ROOMY ? offered : [...offered].reverse();
+    const cloud = llama ? [] : info.cloud || [];
+    const how = llama ? t.llama.modelHow : t.modelHow;
     const id = await this.guide.ask({
       face: 'look',
       line,
-      quote: cloud.length ? `${t.modelHow}\n${t.cloudHow}` : t.modelHow,
+      quote: cloud.length ? `${how}\n${t.cloudHow}` : how,
       actions: [
         ...models.map((m, i) => ({ id: m.name, label: `${m.name} · ${this.size(m.bytes)}`, primary: i === 0 })),
         ...cloud.map((name) => ({ id: name, label: `${name.replace(/:cloud$/, '')} · ${t.cloudFree}` })),
@@ -168,7 +233,7 @@ export class Setup {
   }
 
   // Fetching it: a bar that fills, how much is done, and a button to stop.
-  async pull(name) {
+  async pull(name, llama = false) {
     const t = this.t;
     this.pulling = true;
     this.panel.say({
@@ -178,7 +243,7 @@ export class Setup {
       onAction: () => this.host.cancelSetup(),
     });
     try {
-      return await this.host.pullModel(name);
+      return await (llama ? this.host.pullLlamaModel(name) : this.host.pullModel(name));
     } finally {
       this.pulling = false;
     }

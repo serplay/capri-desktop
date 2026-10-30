@@ -16,6 +16,7 @@ const { createBridge } = require('./bridge');
 const { startWindowWatch } = require('./windows');
 const llm = require('./llm');
 const ollama = require('./ollama');
+const llamacpp = require('./llamacpp');
 const setup = require('./setup');
 const apps = require('./apps');
 const launch = require('./launch');
@@ -31,6 +32,7 @@ const PORT = Number(process.env.CAPRI_PORT) || 47823;
 const SOUND_EXT = /\.(mp3|wav|ogg|m4a)$/i;
 
 const OLLAMA_SITE = 'https://ollama.com';
+const LLAMA_SITE = 'https://github.com/ggml-org/llama.cpp/releases';
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'capri', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } },
@@ -389,7 +391,13 @@ function rebuildTray() {
             label: cloud.free.includes(name) ? `${name} · ${t.cloudFree}` : name,
             type: 'radio', checked: name === pickModel(cfg), click: () => updateConfig({ chatModel: name }),
           }))
-          : [{ label: (chatError || t.noOllama).slice(0, 80), enabled: false }]),
+          : [{ label: (cfg.provider === 'llamacpp' ? t.noLlama : chatError || t.noOllama).slice(0, 80), enabled: false }]),
+        // the other models fetched for llama.cpp: picking one starts her server on it
+        ...(cfg.provider === 'llamacpp'
+          ? llamacpp.downloaded().filter((name) => !chatModels?.includes(name)).map((name) => ({
+            label: name, type: 'radio', checked: false, click: () => pickLlamaModel(name),
+          }))
+          : []),
         // Ollama's free cloud models when you're signed in to it, fetched on the click (it takes a second)
         ...(cfg.provider === 'ollama' && chatModels ? [
           ...cloud.free.filter((name) => !chatModels.includes(name)).map((name) => ({
@@ -525,11 +533,19 @@ async function refreshModels() {
   const cfg = config.load();
   chatError = null;
   chatErrorCode = null;
-  chatModels = await llm.models(cfg.provider, llmConfig(cfg)).catch((err) => {
+  const list = () => llm.models(cfg.provider, llmConfig(cfg)).catch((err) => {
     chatError = err.message;
     chatErrorCode = err.code || null;
     return null;
   });
+  chatModels = await list();
+  // llama.cpp's server is hers to start (it stops when she quits): on the model she fetched for it
+  if (!chatModels && cfg.provider === 'llamacpp' && llamacpp.downloaded().includes(cfg.llamaModel)
+    && (await llamacpp.start(cfg.llamaModel)).ok) {
+    chatError = null;
+    chatErrorCode = null;
+    chatModels = await list();
+  }
   rebuildTray();
   if (cfg.provider === 'ollama' && chatModels) refreshCloud(); // in the background: it asks ollama.com
   return chatModels;
@@ -650,6 +666,13 @@ async function pickProvider(provider) {
   updateConfig({ provider });
   await refreshModels();
   if (chatErrorCode) sendCommand('setupKey'); // it needs a key or an address: she asks for it
+}
+
+// A model fetched for llama.cpp, from her menu: her server restarted on it (it holds one at a time)
+async function pickLlamaModel(name) {
+  updateConfig({ llamaModel: name, chatModel: name });
+  await llamacpp.start(name);
+  await refreshModels();
 }
 
 // What llm.js gets: the config with its keys opened (they're kept encrypted, setup.js)
@@ -781,13 +804,39 @@ function registerIpc() {
   ipcMain.handle('chat:memory', () => readMemory().history || []);
   ipcMain.on('chat:remember', (_e, history) => Array.isArray(history) && saveMemory({ history }));
   ipcMain.on('chat:ollama', () => shell.openExternal(OLLAMA_SITE));
+  ipcMain.on('chat:llama', () => shell.openExternal(LLAMA_SITE));
   // setting her up with buttons (setup.js): Ollama and a model, or a key, or an address
   const progress = (payload) => overlay?.webContents.send('setup:progress', payload);
   let pulling = null; // AbortController of the model being fetched
   ipcMain.handle('setup:info', async () => {
     // the free cloud models too, when Ollama is up and you're signed in to it
     const { free } = (await ollama.models().catch(() => null)) ? await refreshCloud() : { free: [] };
-    return { models: setup.MODELS, cloud: free, ram: os.totalmem(), keyed: Object.keys(setup.KEY_PAGES) };
+    return { models: setup.MODELS, llamaModels: llamacpp.MODELS, cloud: free, ram: os.totalmem(), keyed: Object.keys(setup.KEY_PAGES) };
+  });
+  // the same with llama.cpp: installed, a model fetched, its server started, her chat on it
+  ipcMain.handle('setup:llama', () => llamacpp.state());
+  ipcMain.handle('setup:llamaInstall', () => llamacpp.install((line) => progress({ kind: 'install', line })));
+  ipcMain.handle('setup:llamaStart', async (_e, name) => {
+    const model = name || config.load().llamaModel || llamacpp.downloaded()[0];
+    const res = await llamacpp.start(model);
+    if (!res.ok) return res;
+    updateConfig({ provider: 'llamacpp', llamaModel: model, chatModel: model });
+    await refreshModels();
+    return chatModels?.length ? { ok: true, model: pickModel() } : { ok: false, error: chatError || 'no model' };
+  });
+  ipcMain.handle('setup:llamaPull', async (_e, name) => {
+    if (!llamacpp.MODELS.some((m) => m.name === name)) return { ok: false, error: 'unknown model' };
+    pulling?.abort();
+    const abort = new AbortController();
+    pulling = abort;
+    try {
+      await llamacpp.download(name, (p) => progress({ kind: 'pull', ...p }), abort.signal);
+      return { ok: true, model: name };
+    } catch (err) {
+      return { ok: false, error: abort.signal.aborted ? 'stopped' : err.message };
+    } finally {
+      if (pulling === abort) pulling = null;
+    }
   });
   ipcMain.handle('setup:ollama', () => setup.ollamaState());
   ipcMain.handle('setup:install', () => setup.installOllama((line) => progress({ kind: 'install', line })));
@@ -1069,6 +1118,7 @@ function main() {
   app.on('will-quit', () => {
     globalShortcut.unregisterAll();
     windowWatch?.stop();
+    llamacpp.stop();
   });
   app.on('window-all-closed', (e) => e.preventDefault());
 }

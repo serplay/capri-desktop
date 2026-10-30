@@ -83,8 +83,11 @@ function warm(model) {
 
 // Her answer, streamed: onDelta(piece) as it comes, resolves with all of it.
 async function chat({ model, messages }, onDelta, signal) {
-  // cloud models think before they answer, and that counts in num_predict: kept short, with room for it
-  const thinks = isCloud(model) && known.get(model)?.thinking;
+  // cloud models think before they answer, and that counts in num_predict: kept short, with room for it.
+  // A local one that can (gemma4, qwen3…) is told not to: on a PC it would think for a minute, or
+  // spend her whole answer on it.
+  const thinking = known.get(model)?.thinking;
+  const thinks = isCloud(model) && thinking;
   const res = await fetch(`${base()}/api/chat`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -93,7 +96,7 @@ async function chat({ model, messages }, onDelta, signal) {
       messages,
       stream: true,
       keep_alive: '15m', // she stays loaded while you chat
-      ...(thinks && { think: 'low' }),
+      ...(thinking && { think: thinks ? 'low' : false }),
       options: { temperature: 0.85, num_predict: thinks ? 1200 : 240 },
     }),
     signal,
@@ -122,7 +125,7 @@ async function chat({ model, messages }, onDelta, signal) {
   return text;
 }
 
-// Whether a model can look at pictures (gemma3 can, llama3.2 can't). Can't tell: yes, try it.
+// Whether a model can look at pictures (gemma4 and gemma3 can, llama3.2 can't). Can't tell: yes, try it.
 async function canSee(model) {
   const res = await fetch(`${base()}/api/show`, {
     method: 'POST',
