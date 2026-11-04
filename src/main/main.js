@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
 const {
   app, BrowserWindow, Tray, Menu, ipcMain, screen, protocol, net, shell, globalShortcut, nativeImage,
-  clipboard, ClipboardItem, dialog, powerMonitor, desktopCapturer,
+  clipboard, ClipboardItem, dialog, powerMonitor, desktopCapturer, systemPreferences,
 } = require('electron');
 const { randomUUID } = require('node:crypto');
 
@@ -21,6 +21,7 @@ const setup = require('./setup');
 const apps = require('./apps');
 const launch = require('./launch');
 const files = require('./files');
+const stt = require('./stt');
 const { ASSISTANTS, assistant } = require('./assistants');
 const activeAssistant = () => assistant(config.load().assistant); // Claude Code or Codex
 const activeHooks = () => activeAssistant().hooks;
@@ -331,6 +332,7 @@ function rebuildTray() {
     ...(cfg.claude ? [{ label: t.report, click: () => sendCommand('report') }] : []),
     { label: t.talk, click: () => sendCommand('chat') },
     { label: t.lookNow, click: () => sendCommand('look') },
+    { label: t.voice, click: () => sendCommand('listen') },
     {
       label: t.reminders,
       submenu: reminders.length
@@ -805,6 +807,15 @@ function registerIpc() {
   ipcMain.on('chat:remember', (_e, history) => Array.isArray(history) && saveMemory({ history }));
   ipcMain.on('chat:ollama', () => shell.openExternal(OLLAMA_SITE));
   ipcMain.on('chat:llama', () => shell.openExternal(LLAMA_SITE));
+  // talking to her out loud (listen.js): the microphone (macOS asks you once), then Phonon-2 writes it out
+  ipcMain.handle('stt:mic', () => (process.platform === 'darwin' ? systemPreferences.askForMediaAccess('microphone') : true));
+  ipcMain.handle('stt:transcribe', async (_e, wav) => {
+    try {
+      return { ok: true, text: await stt.transcribe(config.load(), Buffer.from(wav)) };
+    } catch (err) {
+      return { ok: false, error: err.message, code: err.code || null };
+    }
+  });
   // setting her up with buttons (setup.js): Ollama and a model, or a key, or an address
   const progress = (payload) => overlay?.webContents.send('setup:progress', payload);
   let pulling = null; // AbortController of the model being fetched
@@ -1097,6 +1108,7 @@ function main() {
       onDebug: DEV ? debugHandler : null,
     });
     globalShortcut.register('Control+Alt+C', () => toggleVisible());
+    globalShortcut.register('Control+Alt+V', () => sendCommand('listen')); // talk to her out loud; again to stop
     llm.restoreClaude(readMemory().claude);
     refreshModels(); // for her menu's model list
     setTimeout(() => launch.launchables().catch(() => {}), 20000); // what she can open, before you ask

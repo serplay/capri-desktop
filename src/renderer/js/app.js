@@ -699,6 +699,9 @@ async function boot() {
       case 'chat': // "Talk to her" in her menu
         chat.start();
         break;
+      case 'listen': // Ctrl+Alt+V, or "Talk to her out loud" in her menu
+        chat.listen();
+        break;
       case 'report': // "Mission report" in her menu
         if (capri.stowed) {
           host.setConfig({ visible: true });

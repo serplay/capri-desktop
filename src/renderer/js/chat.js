@@ -8,6 +8,7 @@
 import { pick, fmt } from './util.js';
 import { ASSISTANT_NAMES } from './lines.js';
 import { parseReminder, parseWhen, clock } from './reminders.js';
+import { Listen } from './listen.js';
 
 const REMEMBER = 20; // messages she has in mind when answering
 const KEEP = 60;     // messages she remembers across restarts (memory.json)
@@ -169,6 +170,7 @@ export class Chat {
     this.jealousy = null;  // and how she takes your other AIs
     this.onMessage = null; // () => void: you said something to her
     this.waitingWhen = null; // a reminder you asked for without saying when: { text, until }
+    this.listener = new Listen({ host }); // talking to her out loud (Phonon-2)
     host.onChatDelta(({ id, text }) => this.onDelta(id, text));
   }
 
@@ -240,11 +242,13 @@ export class Chat {
       chat: {
         placeholder: t.placeholder,
         send: t.send,
+        mic: t.mic,
         close: t.close,
         noteTag: t.noteTag,
         note: status.local ? t.note : t.noteCloud,
       },
       onSend: (text) => this.send(text),
+      onMic: () => this.listen(),
       onLeave: () => this.close(),
       hold: null,
     });
@@ -261,6 +265,7 @@ export class Chat {
   close() {
     if (!this.open) return;
     this.open = false;
+    this.listener.stop();
     if (this.turn) this.host.chatStop(this.turn);
     this.turn = 0;
     this.host.focusOverlay(false);
@@ -334,6 +339,36 @@ export class Chat {
     this.panel.setChatBusy(false);
     if (!this.agent) this.after(res.text, answer, asked, early, text);
     this.listApps(); // fresh for the next message
+  }
+
+  // Talking to her out loud (Ctrl+Alt+V, or the mic button in her chat): her chat opens if it wasn't,
+  // she listens until you stop talking, and what Phonon-2 heard goes as if you'd typed it. Pressed
+  // again while she listens: that's all you had to say.
+  async listen() {
+    if (this.listener.listening) return this.listener.stop();
+    if (!this.open) await this.start();
+    if (!this.open || this.turn) return;
+    const { panel, t } = this;
+    panel.setListening(true, t.listening);
+    this.capri.pulse();
+    let wav = null;
+    try {
+      wav = await this.listener.record();
+    } catch {
+      panel.setListening(false);
+      this.interject(t.noMic, [], null);
+      return;
+    }
+    if (!wav || !this.open) return panel.setListening(false);
+    panel.setListening(true, t.hearing);
+    const res = await this.host.transcribe(wav).catch((err) => ({ ok: false, error: err.message }));
+    panel.setListening(false);
+    if (!this.open || this.turn) return;
+    if (!res.ok) {
+      this.interject(res.code === 'nophonon' ? t.noPhonon : fmt(t.sttFailed, { error: res.error || '' }), [], null);
+      return;
+    }
+    if (res.text) this.send(res.text);
   }
 
   // "Look at my screen" in her chat: she looks (asking you first, the first time) and answers here,

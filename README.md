@@ -224,6 +224,14 @@ time, she tells you where the picture goes: to her chat's AI. With an AI on your
 one, the picture goes to that service. She never keeps the picture, and her chat remembers what she said for a while.
 It takes a model that can read pictures: gemma4 or gemma3 on your PC, Gemini or OpenAI online (not llama3.2, she'll tell you).
 
+**Talk to her out loud.** **Ctrl+Alt+V** (or the **Mic** button in her chat, or her menu › **Talk to her out loud**):
+her chat opens, she listens until you stop talking (or you press it again), and what you said goes as if you'd typed
+it: "open Spotify", "play some Daft Punk", "remind me in ten minutes"… It's written out on your PC by
+[Phonon-2](https://betterstack.com/community/guides/ai/ai-development/phonon2/), a small (164 MB) speech-to-text model:
+`pip install "fermion-research[mlx]"` (Apple Silicon; Docker for Windows and Linux), and she starts `phonon serve` on her
+own. Running it elsewhere? Set `sttUrl` in `config.json` (or `PHONON_URL`) to its address (`http://host:8000/v1`).
+Phonon-2 understands English only, for now.
+
 ### Make her yours
 
 Right-click her › **Make her yours…** (or "Make me yours" in her guide), one panel at a time, each one skippable:
@@ -265,6 +273,7 @@ She only catches the mouse on her actual body (pixel-precise): the rest of the s
 - **Click** her: she tells you where Claude is at (nothing going on: a **Talk to me** button, to chat with her).
 - **Drag** her: move her around. Let go mid-swing and she flies (see "Throw her").
 - **Click** the panel: it closes.
+- **Ctrl+Alt+V**: talk to her out loud (again to stop).
 - **Ctrl+Alt+C**: she puts herself away (into her biochip, like in the show) and all that's left of her is her mask,
   eyes shut, in the bottom-left corner. Her eyes only open when Claude needs you. Click the mask (or Ctrl+Alt+C again)
   to bring her back.

@@ -738,6 +738,13 @@ html[data-motion='reduced'] .panel__bar {
   padding-inline: 10px;
 }
 
+/* her microphone, on: it throbs while she listens */
+.panel__mic.is-live {
+  background: var(--accent);
+  color: var(--ink);
+  animation: blink 900ms ease-in-out infinite alternate;
+}
+
 /* it's an AI, and it's not her voice from the show: said on every chat, plainly */
 .panel__note {
   margin: 9px 0 0;

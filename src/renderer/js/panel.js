@@ -63,6 +63,7 @@ export class Panel {
     this.chatInput = panel.querySelector('.panel__input');
     this.chatSend = panel.querySelector('.panel__send');
     this.chatClose = panel.querySelector('.panel__close');
+    this.chatMic = panel.querySelector('.panel__mic');
     this.note = panel.querySelector('.panel__note');
     this.chatForm.addEventListener('click', (e) => e.stopPropagation());
     this.chatForm.addEventListener('submit', (e) => {
@@ -76,6 +77,7 @@ export class Panel {
       if (e.key === 'Escape') this.hide();
     });
     this.chatClose.addEventListener('click', () => this.hide());
+    this.chatMic.addEventListener('click', () => this.current?.onMic?.());
 
     this.el.addEventListener('click', () => {
       if (this.current?.chat) this.chatInput.focus(); // a chat stays until you close it
@@ -286,6 +288,9 @@ export class Panel {
     this.chatInput.disabled = false;
     this.chatSend.disabled = false;
     this.chatSend.textContent = chat.send;
+    this.chatMic.hidden = !chat.mic;
+    this.chatMic.textContent = chat.mic || '';
+    this.chatMic.classList.remove('is-live');
     this.chatClose.setAttribute('aria-label', chat.close);
     if (chat.note) {
       const tag = document.createElement('b');
@@ -371,6 +376,17 @@ export class Panel {
     this.chatInput.disabled = busy;
     this.chatSend.disabled = busy;
     if (!busy && this.current?.chat) this.chatInput.focus();
+  }
+
+  // Her microphone on (listen.js): the button lit, what she's doing where you'd type, and no typing
+  // meanwhile. Off: the chat as it was.
+  setListening(on, placeholder) {
+    if (!this.current?.chat) return;
+    this.chatMic.classList.toggle('is-live', Boolean(on));
+    this.chatInput.placeholder = on ? placeholder : this.current.chat.placeholder;
+    this.chatInput.disabled = Boolean(on);
+    this.chatSend.disabled = Boolean(on);
+    if (!on) this.chatInput.focus();
   }
 
   // A button of the message on screen says something else now ("Copied").

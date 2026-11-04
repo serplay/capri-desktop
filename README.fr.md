@@ -224,6 +224,14 @@ IA sur ton PC, rien ne sort de chez toi ; avec une IA en ligne, l'image part che
 l'image, et son chat se souvient de ce qu'elle a dit un moment. Il faut un modèle qui sait lire les images : gemma4 ou
 gemma3 sur ton PC, Gemini ou OpenAI en ligne (pas llama3.2, elle te le dit).
 
+**Parle-lui à voix haute.** **Ctrl+Alt+V** (ou le bouton **Micro** de son chat, ou son menu › **Lui parler à voix
+haute**) : son chat s'ouvre, elle écoute jusqu'à ce que tu t'arrêtes de parler (ou que tu rappuies), et ce que tu as dit
+part comme si tu l'avais tapé : « open Spotify », « play some Daft Punk », « remind me in ten minutes »… C'est écrit sur
+ton PC par [Phonon-2](https://betterstack.com/community/guides/ai/ai-development/phonon2/), un petit modèle (164 Mo) de
+reconnaissance vocale : `pip install "fermion-research[mlx]"` (Apple Silicon ; Docker pour Windows et Linux), et elle
+lance `phonon serve` toute seule. Il tourne ailleurs ? Mets son adresse dans `sttUrl` de `config.json` (ou `PHONON_URL`)
+(`http://hote:8000/v1`). Phonon-2 ne comprend que l'anglais, pour l'instant.
+
 ### La personnaliser
 
 Clic droit sur elle › **La personnaliser…** (ou « Me personnaliser » dans son guide), un panneau à la fois, et chacun
@@ -269,6 +277,7 @@ Elle n'attrape la souris que sur son corps (au pixel près) : tout le reste de l
   avec elle).
 - **Glisser** : tu la déplaces. Lâchée en plein mouvement, elle part (voir « Lance-la »).
 - **Clic** sur le panneau : il se ferme.
+- **Ctrl+Alt+V** : lui parler à voix haute (rappuie pour arrêter).
 - **Ctrl+Alt+C** : elle se range (dans son biochip, comme dans la série) et il ne reste d'elle que son masque, les yeux
   fermés, en bas à gauche de l'écran. Ses yeux ne s'ouvrent que quand Claude a besoin de toi. Clique sur le masque
   (ou refais Ctrl+Alt+C) pour la faire revenir.
