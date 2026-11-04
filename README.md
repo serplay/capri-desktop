@@ -200,7 +200,7 @@ panel says so every time.
 - **A Roblox game by its name** ("start Steal a Brainrot on Roblox", "in my roblox play grow a garden"): she finds
   it on Roblox and drops you straight into it (or opens its page if Roblox isn't installed).
 - **Music**: "pause", "next", "louder", "mute"… press the media keys, so it works with Spotify and most players, right
-  as you send it. "Play Bohemian Rhapsody" or "put some Daft Punk on YouTube" opens the right video on YouTube,
+  as you send it (on a Mac, she tells Spotify or Music directly; macOS asks you once to let her). "Play Bohemian Rhapsody" or "put some Daft Punk on YouTube" opens the right video on YouTube,
   straight away (not a search). "Play whatever you want": she picks. "Put Daft Punk on Spotify" opens Spotify on a
   search for it.
 - **A website**: always behind a button showing where it goes.

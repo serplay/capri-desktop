@@ -2,7 +2,8 @@
 
 // Opening things when you ask her to (chat.js): an app from the Start menu (Store apps like Spotify
 // included), a Steam or Epic game, your music (the media keys: pause, next…, so it works with
-// Spotify and most players), a Spotify search, or a website. Windows only.
+// Spotify and most players; on a Mac, Spotify or Music told directly), a Spotify search, or a
+// website. The rest is Windows only.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -12,6 +13,7 @@ const { app, shell } = require('electron');
 const { powershell } = require('./apps');
 
 const WIN = process.platform === 'win32';
+const MAC = process.platform === 'darwin';
 // not things to open from a chat: uninstallers, help pages and the like
 const SKIP = /uninstall|désinstaller|desinstalar|deinstall|readme|documentation|release notes|support center|website|manual/i;
 const STEAM_SKIP = /redistributable|dedicated server|steamworks/i;
@@ -213,12 +215,44 @@ const KEY_DOWN = 1; // KEYEVENTF_EXTENDEDKEY
 const KEY_UP = 3;   // ...and KEYEVENTF_KEYUP
 
 async function media(action) {
+  if (MAC) return macMedia(action);
   if (!WIN || !MEDIA[action]) return false;
   const [key, times] = MEDIA[action];
   return powershell(
     'Add-Type -Namespace Capri -Name Keys -MemberDefinition \'[DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, System.UIntPtr extra);\'; '
     + `1..${times} | ForEach-Object { [Capri.Keys]::keybd_event(${key}, 0, ${KEY_DOWN}, [UIntPtr]::Zero); [Capri.Keys]::keybd_event(${key}, 0, ${KEY_UP}, [UIntPtr]::Zero) }`,
   ).then(() => true, () => false);
+}
+
+// On a Mac, no media keys to send: the player that's open is told (Spotify, else Apple's Music; to play,
+// Spotify is opened if neither is), and the volume is the Mac's own, 10 % at a time. The first time,
+// macOS asks you if she may control it.
+const MAC_PLAYER = { pause: 'pause', play: 'play', next: 'next track', previous: 'previous track' };
+const MAC_VOLUME = {
+  volup: 'set volume output volume ((output volume of (get volume settings)) + 10) without output muted',
+  voldown: 'set volume output volume ((output volume of (get volume settings)) - 10)',
+  mute: 'set volume output muted (not (output muted of (get volume settings)))',
+};
+
+function macMedia(action) {
+  let script = MAC_VOLUME[action];
+  if (!script && MAC_PLAYER[action]) {
+    const command = MAC_PLAYER[action];
+    const fallback = action === 'play' && fs.existsSync('/Applications/Spotify.app') ? `tell application "Spotify" to ${command}` : 'error "nothing playing"';
+    script = [
+      `if application "Spotify" is running then
+        tell application "Spotify" to ${command}`,
+      `else if application "Music" is running then
+        tell application "Music" to ${command}`,
+      `else
+        ${fallback}`,
+      'end if',
+    ].join('\n');
+  }
+  if (!script) return Promise.resolve(false);
+  return new Promise((resolve) => {
+    execFile('osascript', ['-e', script], { timeout: 10000 }, (err) => resolve(!err));
+  });
 }
 
 // A Spotify search for it: in the app if it's installed, else on the web.

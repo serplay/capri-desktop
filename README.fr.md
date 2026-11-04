@@ -197,7 +197,8 @@ fan d'elle, et le panneau du chat le dit à chaque fois.
 - **Un jeu Roblox par son nom** (« lance Steal a Brainrot sur Roblox », « in my roblox play grow a garden ») : elle le
   trouve sur Roblox et te lance directement dedans (ou ouvre sa page si Roblox n'est pas installé).
 - **La musique** : « pause », « suivante », « plus fort », « coupe le son »… appuient sur les touches multimédia, donc
-  ça marche avec Spotify et la plupart des lecteurs, dès que tu envoies. « Mets Bohemian Rhapsody » ou « mets-moi du
+  ça marche avec Spotify et la plupart des lecteurs, dès que tu envoies (sur Mac, elle le dit directement à Spotify ou
+  Musique ; macOS te demande une fois de la laisser faire). « Mets Bohemian Rhapsody » ou « mets-moi du
   Daft Punk sur YouTube » ouvre le bon clip sur YouTube, directement (pas une recherche). « Mets la musique que tu
   veux » : c'est elle qui choisit. « Mets Daft Punk sur Spotify » ouvre Spotify sur une recherche.
 - **Un site** : toujours derrière un bouton qui montre où il mène.
