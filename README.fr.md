@@ -220,8 +220,8 @@ devant, une ligne de scan la balaie, et elle te dit ce qu'elle en pense, à sa f
 temps** la laisse le faire toute seule, toutes les 8 à 15 minutes, quand tu es là et que tu as changé de fenêtre
 (désactivé tant que tu ne le coches pas). La première fois, elle t'explique où va l'image : à l'IA de son chat. Avec une
 IA sur ton PC, rien ne sort de chez toi ; avec une IA en ligne, l'image part chez ce service. Elle ne garde jamais
-l'image, et son chat se souvient de ce qu'elle a dit un moment. Il faut un modèle qui sait lire les images : gemma3 sur
-ton PC, Gemini ou OpenAI en ligne (pas llama3.2, elle te le dit).
+l'image, et son chat se souvient de ce qu'elle a dit un moment. Il faut un modèle qui sait lire les images : gemma4 ou
+gemma3 sur ton PC, Gemini ou OpenAI en ligne (pas llama3.2, elle te le dit).
 
 ### La personnaliser
 

@@ -222,7 +222,7 @@ scanline sweeps it, and she tells you what she makes of it, her way. **Look at m
 on her own, every 8 to 15 minutes, when you're there and you've switched windows (off until you tick it). The first
 time, she tells you where the picture goes: to her chat's AI. With an AI on your PC, nothing leaves it; with an online
 one, the picture goes to that service. She never keeps the picture, and her chat remembers what she said for a while.
-It takes a model that can read pictures: gemma3 on your PC, Gemini or OpenAI online (not llama3.2, she'll tell you).
+It takes a model that can read pictures: gemma4 or gemma3 on your PC, Gemini or OpenAI online (not llama3.2, she'll tell you).
 
 ### Make her yours
 

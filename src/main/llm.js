@@ -88,13 +88,33 @@ function warm(id, model) {
   if (PROVIDERS[id].kind === 'ollama') ollama.warm(model);
 }
 
+// The conversation as strict chat templates (Gemma's in llama.cpp, Mistral) take it: the system
+// first and once, then you and her by turns, starting with you. Her history doesn't always look like
+// that (her opening line after a note of hers, a message of yours that got no answer): two in a row
+// from the same side become one, and her lines before your first one are left out.
+function alternate(messages) {
+  const parts = (content) => (Array.isArray(content) ? content : [{ type: 'text', text: String(content ?? '') }]);
+  const join = (a, b) => (typeof a === 'string' && typeof b === 'string' ? `${a}\n\n${b}` : [...parts(a), ...parts(b)]);
+  const system = messages.filter((m) => m.role === 'system').map((m) => m.content);
+  const out = [];
+  for (const m of messages) {
+    if (m.role === 'system' || (m.role === 'assistant' && !out.length)) continue;
+    const last = out.at(-1);
+    if (last?.role === m.role) last.content = join(last.content, m.content);
+    else out.push({ role: m.role, content: m.content });
+  }
+  return [...(system.length ? [{ role: 'system', content: system.reduce(join) }] : []), ...out];
+}
+
 // OpenAI-style streaming (server-sent events): onDelta(piece) as it comes, resolves with all of it.
 async function openaiChat(p, { model, messages }, onDelta, signal) {
   const res = await fetch(`${p.url}/chat/completions`, {
     method: 'POST',
     headers: headers(p.key),
     // llama-server and vLLM hand chat_template_kwargs to the model's template (ignored where it has no such switch)
-    body: JSON.stringify({ model, messages, stream: true, ...(p.thinkOff && { chat_template_kwargs: { enable_thinking: false } }) }),
+    body: JSON.stringify({
+      model, messages: alternate(messages), stream: true, ...(p.thinkOff && { chat_template_kwargs: { enable_thinking: false } }),
+    }),
     signal,
   });
   if (!res.ok) throw await failure(res);
