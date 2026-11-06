@@ -226,11 +226,21 @@ gemma3 sur ton PC, Gemini ou OpenAI en ligne (pas llama3.2, elle te le dit).
 
 **Parle-lui à voix haute.** **Ctrl+Alt+V** (ou le bouton **Micro** de son chat, ou son menu › **Lui parler à voix
 haute**) : son chat s'ouvre, elle écoute jusqu'à ce que tu t'arrêtes de parler (ou que tu rappuies), et ce que tu as dit
-part comme si tu l'avais tapé : « open Spotify », « play some Daft Punk », « remind me in ten minutes »… C'est écrit sur
-ton PC par [Phonon-2](https://betterstack.com/community/guides/ai/ai-development/phonon2/), un petit modèle (164 Mo) de
-reconnaissance vocale : `pip install "fermion-research[mlx]"` (Apple Silicon ; Docker pour Windows et Linux), et elle
-lance `phonon serve` toute seule. Il tourne ailleurs ? Mets son adresse dans `sttUrl` de `config.json` (ou `PHONON_URL`)
-(`http://hote:8000/v1`). Phonon-2 ne comprend que l'anglais, pour l'instant.
+part comme si tu l'avais tapé : « open Spotify », « mets du Daft Punk », « rappelle-moi dans dix minutes »… Son menu ›
+**Ses oreilles** choisit ce qui l'écrit (**Automatique** prend le premier qui est là, dans cet ordre) :
+
+| | Langues | Où | Installation |
+|---|---|---|---|
+| **Whisper (whisper.cpp)** | 99 : français, anglais, espagnol, polonais… | ton PC | Mac : `brew install whisper-cpp`. Windows : `whisper-bin-x64.zip` des [versions de whisper.cpp](https://github.com/ggml-org/whisper.cpp/releases), `whisper-server.exe` (et ses DLL) dans **Ses oreilles › Ouvrir le dossier de Whisper**, ou dans ton PATH. Linux : à compiler. Elle lance `whisper-server` sur le port 8178 et télécharge son modèle la première fois (large-v3-turbo, environ 550 Mo). |
+| **Phonon-2** | anglais | ton PC | `pip install "fermion-research[mlx]"` (Apple Silicon ; Docker pour Windows et Linux) ; elle lance `phonon serve` toute seule. Petit (164 Mo) et rapide. |
+| **Serveur Whisper** | 99 | ton PC ou ton réseau | N'importe quel serveur compatible OpenAI, par ex. [speaches](https://github.com/speaches-ai/speaches) (faster-whisper) : `docker run -p 8000:8000 ghcr.io/speaches-ai/speaches:latest-cpu`. `sttUrl` est son adresse (`http://hote:8000/v1`), `sttModel` le modèle (`deepdml/faster-whisper-large-v3-turbo-ct2` par défaut). |
+| **OpenAI** | 50+ | en ligne | Ta clé OpenAI (celle de son chat) ; `gpt-4o-mini-transcribe`. |
+| **Groq Whisper** | 99 | en ligne | Ta clé Groq ; `whisper-large-v3-turbo`, gratuit dans une limite, très rapide. |
+
+**Ses oreilles › Je lui parle en…** donne ta langue à Whisper (sinon il la devine, mais une phrase courte passe parfois
+pour une autre langue). Dans `config.json` : `stt`, `sttLang` (tout code ISO : `fr`, `es`, `pl`…), `whisperModel`
+(`large-v3-turbo-q5_0`, `large-v3-turbo`, `medium-q5_0`, `small-q5_1`, `base-q5_1`, ou le chemin d'un `.bin` ggml à toi).
+Un `sttUrl` réglé avant (ou `PHONON_URL`) reste celui de Phonon-2 en **Automatique**.
 
 ### La personnaliser
 
@@ -519,6 +529,7 @@ src/main/                Electron : fenêtre transparente plein écran, clic à 
   windows.js / .ps1      où sont les autres fenêtres (Windows), pour qu'elle s'assoie dessus
   ollama.js              son chat : le modèle local via Ollama, ou un de ses modèles cloud
   llamacpp.js            son chat sur llama.cpp : l'installe, télécharge un modèle, lance et arrête son serveur
+  stt.js                 t'entendre : whisper.cpp, Phonon-2, un serveur Whisper, OpenAI ou Groq écrit ce que tu dis
   apps.js                fermer une appli que tu lui demandes de fermer (après ton clic)
 src/renderer/js/
   sprite.js              shader WebGL : tête, crinière, position assise, smears, images rémanentes, couleurs, glitch

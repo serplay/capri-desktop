@@ -21,7 +21,11 @@ const DEFAULTS = {
   provider: 'ollama', // who answers her chat: a key of llm.js PROVIDERS
   apiKeys: {},       // { openai: 'sk-...' }, else the provider's env variable
   customUrl: '',     // the 'custom' provider: any OpenAI-compatible base URL (http://host:port/v1)
-  sttUrl: '',        // Phonon-2's speech-to-text server (stt.js); empty: `phonon serve` on this PC
+  stt: 'auto',       // what writes out what you say (stt.js): 'whispercpp', 'phonon', 'server', 'openai', 'groq', or 'auto'
+  sttLang: 'auto',   // the language you talk to her in, for Whisper ('en', 'es', 'pl'…; 'auto': it works it out)
+  sttUrl: '',        // a speech-to-text server of yours (Phonon-2's, or any OpenAI-compatible Whisper one)
+  sttModel: '',      // the model that server should use ('server' only; empty: faster-whisper large-v3-turbo)
+  whisperModel: '',  // whisper.cpp's model: 'large-v3-turbo-q5_0' (empty), 'small-q5_1'…, or the path to a ggml .bin
   claudeCwd: null,   // the folder Claude Code works in (null: your home folder)
   userName: '',      // what she calls you
   persona: '',       // how you want her, in your words (her chat)

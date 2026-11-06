@@ -226,11 +226,21 @@ It takes a model that can read pictures: gemma4 or gemma3 on your PC, Gemini or 
 
 **Talk to her out loud.** **Ctrl+Alt+V** (or the **Mic** button in her chat, or her menu › **Talk to her out loud**):
 her chat opens, she listens until you stop talking (or you press it again), and what you said goes as if you'd typed
-it: "open Spotify", "play some Daft Punk", "remind me in ten minutes"… It's written out on your PC by
-[Phonon-2](https://betterstack.com/community/guides/ai/ai-development/phonon2/), a small (164 MB) speech-to-text model:
-`pip install "fermion-research[mlx]"` (Apple Silicon; Docker for Windows and Linux), and she starts `phonon serve` on her
-own. Running it elsewhere? Set `sttUrl` in `config.json` (or `PHONON_URL`) to its address (`http://host:8000/v1`).
-Phonon-2 understands English only, for now.
+it: "open Spotify", "play some Daft Punk", "remind me in ten minutes", "pon algo de Rosalía"… Her menu › **Her ears**
+picks what writes it out (**Automatic** takes the first one there, in this order):
+
+| | Languages | Where | Set up |
+|---|---|---|---|
+| **Whisper (whisper.cpp)** | 99: English, Spanish, Polish, French, Portuguese… | your PC | Mac: `brew install whisper-cpp`. Windows: `whisper-bin-x64.zip` from [whisper.cpp's releases](https://github.com/ggml-org/whisper.cpp/releases), `whisper-server.exe` (and its DLLs) in **Her ears › Open the Whisper folder**, or on your PATH. Linux: build it. She starts `whisper-server` on port 8178 herself and fetches its model the first time (large-v3-turbo, about 550 MB). |
+| **Phonon-2** | English | your PC | `pip install "fermion-research[mlx]"` (Apple Silicon; Docker for Windows and Linux); she starts `phonon serve` on her own. Small (164 MB) and fast. |
+| **Whisper server** | 99 | your PC or your network | Any OpenAI-compatible one, e.g. [speaches](https://github.com/speaches-ai/speaches) (faster-whisper): `docker run -p 8000:8000 ghcr.io/speaches-ai/speaches:latest-cpu`. `sttUrl` is its address (`http://host:8000/v1`), `sttModel` the model (`deepdml/faster-whisper-large-v3-turbo-ct2` by default). |
+| **OpenAI** | 50+ | online | Your OpenAI key (the one her chat uses); `gpt-4o-mini-transcribe`. |
+| **Groq Whisper** | 99 | online | Your Groq key; `whisper-large-v3-turbo`, free tier, very fast. |
+
+**Her ears › I talk to her in…** tells Whisper your language (it works it out on its own otherwise, but a short
+sentence is sometimes taken for another language). In `config.json`: `stt`, `sttLang` (any ISO code: `pl`, `es`, `en`…),
+`whisperModel` (`large-v3-turbo-q5_0`, `large-v3-turbo`, `medium-q5_0`, `small-q5_1`, `base-q5_1`, or the path to a
+ggml `.bin` of yours). A `sttUrl` set from before (or `PHONON_URL`) is still Phonon-2's on **Automatic**.
 
 ### Make her yours
 
@@ -505,6 +515,7 @@ src/main/                Electron: full-screen transparent click-through window,
   windows.js / .ps1      where the other windows are (Windows only), so she can sit on them
   ollama.js              her chat: the local model through Ollama, or one of its cloud models
   llamacpp.js            her chat on llama.cpp: installs it, fetches a model, starts and stops its server
+  stt.js                 hearing you: whisper.cpp, Phonon-2, a Whisper server, OpenAI or Groq writes out what you say
   apps.js                closing an app you asked her to close (after your click)
 src/renderer/js/
   sprite.js              WebGL shader: head tilt, mane flare, sitting, smears, afterimages, colors, glitch

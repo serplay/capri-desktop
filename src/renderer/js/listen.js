@@ -1,5 +1,5 @@
 // Listening to you: the microphone, until you stop talking (or press Ctrl+Alt+V again), as a WAV
-// that Phonon-2 writes out on this PC (main/stt.js). Nothing is recorded before you ask.
+// that Whisper or Phonon-2 writes out (main/stt.js). Nothing is recorded before you ask.
 
 const RATE = 16000;           // what speech models expect
 const START_MS = 6000;        // time to start talking before she gives up

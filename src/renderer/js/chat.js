@@ -170,7 +170,7 @@ export class Chat {
     this.jealousy = null;  // and how she takes your other AIs
     this.onMessage = null; // () => void: you said something to her
     this.waitingWhen = null; // a reminder you asked for without saying when: { text, until }
-    this.listener = new Listen({ host }); // talking to her out loud (Phonon-2)
+    this.listener = new Listen({ host }); // talking to her out loud (Whisper or Phonon-2, stt.js)
     host.onChatDelta(({ id, text }) => this.onDelta(id, text));
   }
 
@@ -342,7 +342,7 @@ export class Chat {
   }
 
   // Talking to her out loud (Ctrl+Alt+V, or the mic button in her chat): her chat opens if it wasn't,
-  // she listens until you stop talking, and what Phonon-2 heard goes as if you'd typed it. Pressed
+  // she listens until you stop talking, and what Whisper (or Phonon-2) heard goes as if you'd typed it. Pressed
   // again while she listens: that's all you had to say.
   async listen() {
     if (this.listener.listening) return this.listener.stop();
@@ -361,11 +361,18 @@ export class Chat {
     }
     if (!wav || !this.open) return panel.setListening(false);
     panel.setListening(true, t.hearing);
+    // the first time with whisper.cpp, its model comes down before she can hear anything
+    const off = this.host.onSttProgress?.(({ bytes, completed, total }) => {
+      if (bytes) this.interject(fmt(t.earsFetch, { mb: Math.round(bytes / 1e6) }), [], null);
+      if (total) panel.setListening(true, `${t.hearing} ${Math.floor((completed / total) * 100)} %`);
+    });
     const res = await this.host.transcribe(wav).catch((err) => ({ ok: false, error: err.message }));
+    off?.();
     panel.setListening(false);
     if (!this.open || this.turn) return;
     if (!res.ok) {
-      this.interject(res.code === 'nophonon' ? t.noPhonon : fmt(t.sttFailed, { error: res.error || '' }), [], null);
+      const how = { nophonon: t.noPhonon, nowhisper: t.noWhisper, nostt: t.noStt, nokey: t.sttNoKey }[res.code];
+      this.interject(how || fmt(t.sttFailed, { error: res.error || '' }), [], null);
       return;
     }
     if (res.text) this.send(res.text);

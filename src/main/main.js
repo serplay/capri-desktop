@@ -333,6 +333,31 @@ function rebuildTray() {
     { label: t.talk, click: () => sendCommand('chat') },
     { label: t.lookNow, click: () => sendCommand('look') },
     { label: t.voice, click: () => sendCommand('listen') },
+    // what writes out what you say (stt.js), and in which language you talk to her
+    {
+      label: t.ears,
+      submenu: [
+        { label: t.earsAuto, type: 'radio', checked: !stt.ENGINES[cfg.stt], click: () => updateConfig({ stt: 'auto' }) },
+        ...Object.entries(stt.ENGINES).map(([id, { label }]) => ({
+          label, type: 'radio', checked: cfg.stt === id, click: () => updateConfig({ stt: id }),
+        })),
+        { type: 'separator' },
+        {
+          label: t.earsLang,
+          submenu: [['auto', t.auto.replace(/\s*\(.*\)/, '')], ...stt.LANGUAGES].map(([sttLang, label]) => ({
+            label, type: 'radio', checked: (cfg.sttLang || 'auto') === sttLang, click: () => updateConfig({ sttLang }),
+          })),
+        },
+        // where whisper-server.exe goes, when it isn't on the PATH (and where her Whisper models are)
+        {
+          label: t.earsDir,
+          click: () => {
+            fs.mkdirSync(stt.whisperDir(), { recursive: true });
+            shell.openPath(stt.whisperDir());
+          },
+        },
+      ],
+    },
     {
       label: t.reminders,
       submenu: reminders.length
@@ -807,11 +832,13 @@ function registerIpc() {
   ipcMain.on('chat:remember', (_e, history) => Array.isArray(history) && saveMemory({ history }));
   ipcMain.on('chat:ollama', () => shell.openExternal(OLLAMA_SITE));
   ipcMain.on('chat:llama', () => shell.openExternal(LLAMA_SITE));
-  // talking to her out loud (listen.js): the microphone (macOS asks you once), then Phonon-2 writes it out
+  // talking to her out loud (listen.js): the microphone (macOS asks you once), then Whisper or Phonon-2
+  // writes it out (stt.js); the first time with whisper.cpp, its model comes down first
   ipcMain.handle('stt:mic', () => (process.platform === 'darwin' ? systemPreferences.askForMediaAccess('microphone') : true));
   ipcMain.handle('stt:transcribe', async (_e, wav) => {
     try {
-      return { ok: true, text: await stt.transcribe(config.load(), Buffer.from(wav)) };
+      const onProgress = (payload) => overlay?.webContents.send('stt:progress', payload);
+      return { ok: true, text: await stt.transcribe(config.load(), Buffer.from(wav), { onProgress }) };
     } catch (err) {
       return { ok: false, error: err.message, code: err.code || null };
     }
@@ -1131,6 +1158,7 @@ function main() {
     globalShortcut.unregisterAll();
     windowWatch?.stop();
     llamacpp.stop();
+    stt.stop();
   });
   app.on('window-all-closed', (e) => e.preventDefault());
 }
